@@ -424,6 +424,8 @@ varying vec2 vTextureCoord;
 varying vec2 vTravel;
 // must be named uTextures to match getBatchSamplersUniformGroup()
 uniform sampler2D uTextures[${maxTextures}];
+// 1.0 for premultiplied textures (default), 0.0 for 'no-premultiply-alpha'
+uniform float uPremultiplyAlpha;
 ${extraUniforms}`;
 }
 
@@ -491,7 +493,16 @@ function glTextureSampleAndOutput(maxTextures: number): string
     float textureId = floor(vTextureId + 0.5);
     ${sampleSrc}
 
-    gl_FragColor = vColor * texColor * alpha;
+    vec4 outColor = vColor * texColor * alpha;
+
+    // non premultiplied textures use the *-npm blend modes (SRC_ALPHA), which expect
+    // straight color: undo the premultiplication so the source alpha is not applied twice.
+    if (uPremultiplyAlpha < 0.5 && outColor.a > 0.0)
+    {
+        outColor = vec4(outColor.rgb / outColor.a, outColor.a);
+    }
+
+    gl_FragColor = outColor;
 }
 `;
 }
@@ -539,6 +550,15 @@ function wgslStructsAndConstants(textured = false): string
 }
 
 @group(0) @binding(0) var<uniform> globalUniforms: GlobalUniforms;
+
+struct AlphaModeUniforms {
+    // 1.0 for premultiplied textures (default), 0.0 for 'no-premultiply-alpha'
+    uPremultiplyAlpha: f32,
+}
+
+// group 2 binding 1, next to the local uniforms (binding 0) when present. This keeps the
+// whole shader within the 4 bind group limit and leaves group 3 for custom shaders.
+@group(2) @binding(1) var<uniform> alphaModeUniforms: AlphaModeUniforms;
 
 struct VSInput {
     @location(0) aPrev: vec2<f32>,
@@ -970,7 +990,16 @@ function wgslTextureSampleAndReturn(sampleBranches: string): string
     let uvDy = dpdy(vTextureCoord);
 ${sampleBranches}
 
-    return input.vColor * texColor * alpha;
+    var outColor: vec4<f32> = input.vColor * texColor * alpha;
+
+    // non premultiplied textures use the *-npm blend modes (SRC_ALPHA), which expect
+    // straight color: undo the premultiplication so the source alpha is not applied twice.
+    if (alphaModeUniforms.uPremultiplyAlpha < 0.5 && outColor.a > 0.0)
+    {
+        outColor = vec4<f32>(outColor.rgb / outColor.a, outColor.a);
+    }
+
+    return outColor;
 }
 `;
 }

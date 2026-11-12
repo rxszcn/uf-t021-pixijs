@@ -8,6 +8,10 @@ import { roundPixelsBitGl } from '../../../rendering/high-shader/shader-bits/rou
 import { getBatchSamplersUniformGroup } from '../../../rendering/renderers/gl/shader/getBatchSamplersUniformGroup';
 import { Shader } from '../../../rendering/renderers/shared/shader/Shader';
 import { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../../rendering/renderers/shared/state/getAlphaModeUniformGroup';
 import { type Renderer } from '../../../rendering/renderers/types';
 import { AbstractGlGraphicsAdaptor } from './AbstractGlGraphicsAdaptor';
 
@@ -55,6 +59,7 @@ export class GlGraphicsAdaptor extends AbstractGlGraphicsAdaptor<GraphicsContext
             resources: {
                 localUniforms: uniforms,
                 batchSamplers: getBatchSamplersUniformGroup(maxTextures),
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
             }
         });
     }

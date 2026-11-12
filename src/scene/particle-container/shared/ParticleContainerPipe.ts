@@ -2,6 +2,7 @@ import { ExtensionType } from '../../../extensions/Extensions';
 import { Matrix } from '../../../maths/matrix/Matrix';
 import { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
 import { getAdjustedBlendModeBlend } from '../../../rendering/renderers/shared/state/getAdjustedBlendModeBlend';
+import { isNpmBlendMode } from '../../../rendering/renderers/shared/state/isNpmBlendMode';
 import { State } from '../../../rendering/renderers/shared/state/State';
 import { GCManagedHash } from '../../../utils/data/GCManagedHash';
 import { multiplyHexColors } from '../../container/utils/multiplyHexColors';
@@ -53,6 +54,7 @@ export class ParticleContainerPipe implements RenderPipe<ParticleContainer>
         uColor: { value: new Float32Array(4), type: 'vec4<f32>' },
         uRound: { value: 1, type: 'f32' },
         uResolution: { value: [0, 0], type: 'vec2<f32>' },
+        uPremultiplyAlpha: { value: 1, type: 'f32' },
     });
 
     /**
@@ -128,6 +130,9 @@ export class ParticleContainerPipe implements RenderPipe<ParticleContainer>
         state.blendMode = getAdjustedBlendModeBlend(container.groupBlendMode, container.texture._source);
 
         const uniforms = this.localUniforms.uniforms;
+
+        // npm blend modes are only used by non premultiplied textures
+        uniforms.uPremultiplyAlpha = isNpmBlendMode(state.blendMode) ? 0 : 1;
 
         const transformationMatrix = uniforms.uTranslationMatrix;
 

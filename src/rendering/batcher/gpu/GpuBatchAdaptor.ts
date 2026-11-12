@@ -1,4 +1,6 @@
 import { ExtensionType } from '../../../extensions/Extensions';
+import { BindGroup } from '../../renderers/gpu/shader/BindGroup';
+import { isNpmBlendMode } from '../../renderers/shared/state/isNpmBlendMode';
 import { State } from '../../renderers/shared/state/State';
 import { getTextureBatchBindGroup } from './getTextureBatchBindGroup';
 
@@ -10,6 +12,11 @@ import type { Batch } from '../shared/Batcher';
 import type { BatcherAdaptor, BatcherPipe } from '../shared/BatcherPipe';
 
 const tempState = State.for2d();
+
+// WebGPU requires every group in the pipeline layout to be bound at draw time, even a
+// group the batch shader leaves empty (the batch program's group 2 has no resources).
+// A single empty bind group satisfies all such slots.
+const emptyBindGroup = new BindGroup();
 
 /**
  * A BatcherAdaptor that uses the GPU to render batches.
@@ -61,6 +68,19 @@ export class GpuBatchAdaptor implements BatcherAdaptor
         encoder.resetBindGroup(1);
 
         encoder.setBindGroup(0, globalUniformsBindGroup, program);
+
+        // Bind every remaining group declared by the pipeline layout. Group 1 (the texture
+        // batch) is rebound per draw in execute(); the others stay bound for the whole pass.
+        // Empty slots get the shared empty bind group so WebGPU validation passes, and the
+        // alpha mode flag (group 3) is bound once and only its value changes per batch.
+        const layout = program.layout;
+
+        for (let groupIndex = 2; groupIndex < layout.length; groupIndex++)
+        {
+            const bindGroup = shader.groups[groupIndex] ?? emptyBindGroup;
+
+            encoder.setBindGroup(groupIndex, bindGroup, program);
+        }
     }
 
     public execute(batchPipe: BatcherPipe, batch: Batch): void
@@ -81,6 +101,12 @@ export class GpuBatchAdaptor implements BatcherAdaptor
         }
 
         tempState.blendMode = batch.blendMode;
+
+        // npm blend modes are only used by non premultiplied textures
+        const alphaModeUniforms = this._shader.resources.alphaModeUniforms;
+
+        alphaModeUniforms.uniforms.uPremultiplyAlpha = isNpmBlendMode(batch.blendMode) ? 0 : 1;
+        renderer.ubo.updateUniformGroup(alphaModeUniforms);
 
         const gpuBindGroup = renderer.bindGroup.getBindGroup(
             batch.bindGroup, program, 1

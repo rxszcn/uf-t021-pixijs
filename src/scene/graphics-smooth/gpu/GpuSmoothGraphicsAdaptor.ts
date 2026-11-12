@@ -2,6 +2,10 @@ import { ExtensionType } from '../../../extensions/Extensions';
 import { Matrix } from '../../../maths/matrix/Matrix';
 import { Shader } from '../../../rendering/renderers/shared/shader/Shader';
 import { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../../rendering/renderers/shared/state/getAlphaModeUniformGroup';
 import { AbstractGpuGraphicsAdaptor } from '../../graphics/gpu/AbstractGpuGraphicsAdaptor';
 import { getSmoothGpuProgram } from '../shared/batcher/SmoothShader';
 
@@ -40,13 +44,19 @@ export class GpuSmoothGraphicsAdaptor extends AbstractGpuGraphicsAdaptor<SmoothG
         // both shaders share the uniform group, so the pipe only has to update this.shader
         this.shader = new Shader({
             gpuProgram: getSmoothGpuProgram({ name: 'smooth-local', maxTextures, localUniforms: true }),
-            resources: { localUniforms },
+            resources: {
+                localUniforms,
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
+            },
         });
         this._texturedShader = new Shader({
             gpuProgram: getSmoothGpuProgram({
                 name: 'smooth-local-textured', maxTextures, localUniforms: true, textured: true,
             }),
-            resources: { localUniforms },
+            resources: {
+                localUniforms,
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
+            },
         });
     }
 

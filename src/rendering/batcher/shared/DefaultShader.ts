@@ -4,6 +4,10 @@ import { generateTextureBatchBit, generateTextureBatchBitGl } from '../../high-s
 import { roundPixelsBit, roundPixelsBitGl } from '../../high-shader/shader-bits/roundPixelsBit';
 import { getBatchSamplersUniformGroup } from '../../renderers/gl/shader/getBatchSamplersUniformGroup';
 import { Shader } from '../../renderers/shared/shader/Shader';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../renderers/shared/state/getAlphaModeUniformGroup';
 
 /**
  * DefaultShader is a specialized shader class designed for batch rendering.
@@ -45,6 +49,7 @@ export class DefaultShader extends Shader
             gpuProgram,
             resources: {
                 batchSamplers: getBatchSamplersUniformGroup(maxTextures),
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
             }
         });
 

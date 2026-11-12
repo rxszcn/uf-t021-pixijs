@@ -2,6 +2,10 @@ import { Matrix } from '../../../maths/matrix/Matrix';
 import { getBatchSamplersUniformGroup } from '../../../rendering/renderers/gl/shader/getBatchSamplersUniformGroup';
 import { Shader } from '../../../rendering/renderers/shared/shader/Shader';
 import { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../../rendering/renderers/shared/state/getAlphaModeUniformGroup';
 import { getSmoothGlProgram, getSmoothGpuProgram } from './batcher/SmoothShader';
 
 /**
@@ -139,6 +143,7 @@ export class DashLineShader extends Shader
                 localUniforms,
                 dashUniforms,
                 batchSamplers: getBatchSamplersUniformGroup(maxTextures),
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
             },
         });
 

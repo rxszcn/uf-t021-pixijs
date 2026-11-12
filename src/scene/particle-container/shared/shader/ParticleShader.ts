@@ -44,6 +44,7 @@ export class ParticleShader extends Shader
                     uColor: { value: new Color(0xFFFFFF), type: 'vec4<f32>' },
                     uRound: { value: 1, type: 'f32' },
                     uResolution: { value: [0, 0], type: 'vec2<f32>' },
+                    uPremultiplyAlpha: { value: 1, type: 'f32' },
                 }
             }
         });

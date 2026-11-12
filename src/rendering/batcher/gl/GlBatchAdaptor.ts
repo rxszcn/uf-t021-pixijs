@@ -1,9 +1,11 @@
 import { ExtensionType } from '../../../extensions/Extensions';
+import { isNpmBlendMode } from '../../renderers/shared/state/isNpmBlendMode';
 import { State } from '../../renderers/shared/state/State';
 
 import type { WebGLRenderer } from '../../renderers/gl/WebGLRenderer';
 import type { Geometry } from '../../renderers/shared/geometry/Geometry';
 import type { Shader } from '../../renderers/shared/shader/Shader';
+import type { UniformGroup } from '../../renderers/shared/shader/UniformGroup';
 import type { Batch } from '../shared/Batcher';
 import type { BatcherAdaptor, BatcherPipe } from '../shared/BatcherPipe';
 
@@ -23,11 +25,12 @@ export class GlBatchAdaptor implements BatcherAdaptor
     } as const;
 
     private readonly _tempState = State.for2d();
+    private _shader: Shader;
 
     /**
      * We only want to sync the a batched shaders uniforms once on first use
      * this is a hash of shader uids to a boolean value.  When the shader is first bound
-     * we set the value to true.  When the shader is bound again we check the value and
+     * we set the value to true.  When it is bound again we check the value and
      * if it is true we know that the uniforms have already been synced and we skip it.
      */
     private _didUploadHash: Record<string, boolean> = {};
@@ -44,6 +47,8 @@ export class GlBatchAdaptor implements BatcherAdaptor
     public start(batchPipe: BatcherPipe, geometry: Geometry, shader: Shader): void
     {
         const renderer = batchPipe.renderer as WebGLRenderer;
+
+        this._shader = shader;
 
         const didUpload = this._didUploadHash[shader.uid];
 
@@ -67,6 +72,14 @@ export class GlBatchAdaptor implements BatcherAdaptor
         this._tempState.blendMode = batch.blendMode;
 
         renderer.state.set(this._tempState);
+
+        // npm blend modes are only used by non premultiplied textures.
+        // The program is fully synced just once in start(), so the alpha mode flag
+        // is uploaded per batch here to match the texture alpha mode of this draw.
+        const alphaModeUniforms = this._shader.resources.alphaModeUniforms as UniformGroup;
+
+        alphaModeUniforms.uniforms.uPremultiplyAlpha = isNpmBlendMode(batch.blendMode) ? 0 : 1;
+        renderer.shader.updateUniformGroup(alphaModeUniforms);
 
         const textures = batch.textures.textures;
 

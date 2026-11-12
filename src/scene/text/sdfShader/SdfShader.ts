@@ -12,6 +12,10 @@ import { roundPixelsBit, roundPixelsBitGl } from '../../../rendering/high-shader
 import { getBatchSamplersUniformGroup } from '../../../rendering/renderers/gl/shader/getBatchSamplersUniformGroup';
 import { Shader } from '../../../rendering/renderers/shared/shader/Shader';
 import { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../../rendering/renderers/shared/state/getAlphaModeUniformGroup';
 import { localUniformMSDFBit, localUniformMSDFBitGl } from './shader-bits/localUniformMSDFBit';
 import { mSDFBit, mSDFBitGl } from './shader-bits/mSDFBit';
 
@@ -61,6 +65,7 @@ export class SdfShader extends Shader
             resources: {
                 localUniforms: uniforms,
                 batchSamplers: getBatchSamplersUniformGroup(maxTextures),
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
             }
         });
     }

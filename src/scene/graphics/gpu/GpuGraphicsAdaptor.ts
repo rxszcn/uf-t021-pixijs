@@ -7,6 +7,10 @@ import { localUniformBitGroup2 } from '../../../rendering/high-shader/shader-bit
 import { roundPixelsBit } from '../../../rendering/high-shader/shader-bits/roundPixelsBit';
 import { Shader } from '../../../rendering/renderers/shared/shader/Shader';
 import { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../../rendering/renderers/shared/state/getAlphaModeUniformGroup';
 import { type Renderer } from '../../../rendering/renderers/types';
 import { AbstractGpuGraphicsAdaptor } from './AbstractGpuGraphicsAdaptor';
 
@@ -55,6 +59,7 @@ export class GpuGraphicsAdaptor extends AbstractGpuGraphicsAdaptor<GraphicsConte
             resources: {
                 // added on the fly!
                 localUniforms,
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
             },
         });
     }

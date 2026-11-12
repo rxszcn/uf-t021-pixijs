@@ -3,6 +3,10 @@ import { Matrix } from '../../../maths/matrix/Matrix';
 import { getBatchSamplersUniformGroup } from '../../../rendering/renderers/gl/shader/getBatchSamplersUniformGroup';
 import { Shader } from '../../../rendering/renderers/shared/shader/Shader';
 import { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../../rendering/renderers/shared/state/getAlphaModeUniformGroup';
 import { AbstractGlGraphicsAdaptor } from '../../graphics/gl/AbstractGlGraphicsAdaptor';
 import { getSmoothGlProgram } from '../shared/batcher/SmoothShader';
 
@@ -42,13 +46,21 @@ export class GlSmoothGraphicsAdaptor extends AbstractGlGraphicsAdaptor<SmoothGra
         // both shaders share the uniform group, so the pipe only has to update this.shader
         this.shader = new Shader({
             glProgram: getSmoothGlProgram({ name: 'smooth-local', maxTextures, localUniforms: true }),
-            resources: { localUniforms: uniforms, batchSamplers },
+            resources: {
+                localUniforms: uniforms,
+                batchSamplers,
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
+            },
         });
         this._texturedShader = new Shader({
             glProgram: getSmoothGlProgram({
                 name: 'smooth-local-textured', maxTextures, localUniforms: true, textured: true,
             }),
-            resources: { localUniforms: uniforms, batchSamplers },
+            resources: {
+                localUniforms: uniforms,
+                batchSamplers,
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
+            },
         });
     }
 

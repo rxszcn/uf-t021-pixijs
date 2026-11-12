@@ -1,6 +1,9 @@
+import { isNpmBlendMode } from '../../../rendering/renderers/shared/state/isNpmBlendMode';
+
 import type { Batch } from '../../../rendering/batcher/shared/Batcher';
 import type { WebGLRenderer } from '../../../rendering/renderers/gl/WebGLRenderer';
 import type { Shader } from '../../../rendering/renderers/shared/shader/Shader';
+import type { UniformGroup } from '../../../rendering/renderers/shared/shader/UniformGroup';
 import type { Renderer } from '../../../rendering/renderers/types';
 import type { AbstractGraphicsContextRenderData } from '../shared/AbstractGraphicsContextSystem';
 import type { GraphicsAdaptor, GraphicsPipeLike } from '../shared/AbstractGraphicsPipe';
@@ -56,12 +59,21 @@ export abstract class AbstractGlGraphicsAdaptor<
 
         const batches = instructions.instructions as Batch[];
 
+        const alphaModeUniforms = shader.resources.alphaModeUniforms as UniformGroup;
+
         for (let i = 0; i < instructions.instructionSize; i++)
         {
             const batch = batches[i];
 
             if (batch.size)
             {
+                // match the alpha mode flag to this batch before drawing
+                if (alphaModeUniforms)
+                {
+                    alphaModeUniforms.uniforms.uPremultiplyAlpha = isNpmBlendMode(batch.blendMode) ? 0 : 1;
+                    renderer.shader.updateUniformGroup(alphaModeUniforms);
+                }
+
                 for (let j = 0; j < batch.textures.count; j++)
                 {
                     renderer.texture.bind(batch.textures.textures[j], j);

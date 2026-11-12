@@ -4,6 +4,8 @@ struct ParticleUniforms {
   uColor:vec4<f32>,
   uRound:f32,
   uResolution:vec2<f32>,
+  // 1.0 for premultiplied textures (default), 0.0 for 'no-premultiply-alpha'
+  uPremultiplyAlpha:f32,
 };
 
 fn roundPixels(position: vec2<f32>, targetSize: vec2<f32>) -> vec2<f32>
@@ -58,6 +60,13 @@ fn mainFragment(
 ) -> @location(0) vec4<f32> {
 
     var sample = textureSample(uTexture, uSampler, uv) * color;
-   
+
+    // non premultiplied textures are drawn with the *-npm blend modes (SRC_ALPHA),
+    // which expect straight color: undo the premultiplication so the source alpha
+    // is not applied twice (which darkens fading particles).
+    if (uniforms.uPremultiplyAlpha < 0.5 && sample.a > 0.0) {
+        sample = vec4(sample.rgb / sample.a, sample.a);
+    }
+
     return sample;
 }

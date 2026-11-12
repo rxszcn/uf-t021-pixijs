@@ -2,6 +2,10 @@ import { getBatchSamplersUniformGroup } from '../../../../rendering/renderers/gl
 import { GlProgram } from '../../../../rendering/renderers/gl/shader/GlProgram';
 import { GpuProgram } from '../../../../rendering/renderers/gpu/shader/GpuProgram';
 import { Shader } from '../../../../rendering/renderers/shared/shader/Shader';
+import {
+    ALPHA_MODE_UNIFORM_NAME,
+    getAlphaModeUniformGroup
+} from '../../../../rendering/renderers/shared/state/getAlphaModeUniformGroup';
 import { generateSmoothGlSource, generateSmoothWgslSource } from './smoothShaderSource';
 
 import type { SmoothShaderSourceOptions } from './smoothShaderSource';
@@ -55,6 +59,7 @@ export class SmoothShader extends Shader
             gpuProgram: getSmoothGpuProgram(options),
             resources: {
                 batchSamplers: getBatchSamplersUniformGroup(maxTextures),
+                [ALPHA_MODE_UNIFORM_NAME]: getAlphaModeUniformGroup(),
             },
         });
 

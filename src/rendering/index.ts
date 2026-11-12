@@ -209,6 +209,8 @@ export * from './renderers/shared/shader/utils/uniformParsers';
 export * from './renderers/shared/startup/HelloSystem';
 export * from './renderers/shared/state/const';
 export * from './renderers/shared/state/getAdjustedBlendModeBlend';
+export * from './renderers/shared/state/getAlphaModeUniformGroup';
+export * from './renderers/shared/state/isNpmBlendMode';
 export * from './renderers/shared/state/State';
 export * from './renderers/shared/system/AbstractRenderer';
 export * from './renderers/shared/system/SharedSystems';
